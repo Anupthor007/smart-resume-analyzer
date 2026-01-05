@@ -1,5 +1,12 @@
 import { motion } from "framer-motion";
-import { Upload, FileText, Loader2, CheckCircle } from "lucide-react";
+import {
+  Upload,
+  FileText,
+  Loader2,
+  CheckCircle,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { useState } from "react";
 
 function ResumeUpload() {
@@ -7,6 +14,7 @@ function ResumeUpload() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
+  const [expanded, setExpanded] = useState(false);
 
   function handleFileChange(event) {
     const selectedFile = event.target.files[0];
@@ -14,6 +22,7 @@ function ResumeUpload() {
       setFile(selectedFile);
       setResult(null);
       setError(null);
+      setExpanded(false);
     }
   }
 
@@ -64,7 +73,7 @@ function ResumeUpload() {
 
           <input
             type="file"
-            accept=".pdf,.doc,.docx"
+            accept=".pdf"
             className="hidden"
             id="resume-upload"
             onChange={handleFileChange}
@@ -111,24 +120,37 @@ function ResumeUpload() {
 
           {/* RESULT */}
           {result && (
-            <div className="mt-6 text-left bg-gray-800 p-4 rounded-xl">
-              <div className="flex items-center gap-2 text-green-400 mb-2">
+            <div className="mt-6 text-left bg-gray-800 p-5 rounded-xl">
+              <div className="flex items-center gap-2 text-green-400 mb-3">
                 <CheckCircle size={18} />
-                <span className="font-semibold">Analysis Result</span>
+                <span className="font-semibold">Extracted Resume Text</span>
               </div>
-              <p className="text-sm text-gray-300">
-                <strong>Filename:</strong> {result.filename}
-              </p>
-              <p className="text-sm text-gray-300">
-                <strong>Type:</strong> {result.content_type}
-              </p>
-              <p className="text-sm text-gray-300 mt-2">
-                {result.message}
-              </p>
+
+              <div
+                className={`text-sm text-gray-300 whitespace-pre-line overflow-hidden ${
+                  expanded ? "max-h-[500px]" : "max-h-40"
+                }`}
+              >
+                {result.preview || "No text extracted from resume."}
+              </div>
+
+              <button
+                onClick={() => setExpanded(!expanded)}
+                className="mt-3 text-blue-400 flex items-center gap-1 hover:underline"
+              >
+                {expanded ? (
+                  <>
+                    Show less <ChevronUp size={16} />
+                  </>
+                ) : (
+                  <>
+                    Show more <ChevronDown size={16} />
+                  </>
+                )}
+              </button>
             </div>
           )}
 
-          {/* ERROR */}
           {error && (
             <p className="mt-4 text-red-400 text-sm">
               {error}
