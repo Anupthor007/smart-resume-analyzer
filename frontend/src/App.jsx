@@ -4,7 +4,6 @@ import ResumeUpload from "./components/ResumeUpload";
 function App() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
-      {/* Navbar */}
       <nav className="flex items-center justify-between px-8 py-4 border-b border-gray-800">
         <h1 className="text-xl font-bold">Smart Resume Analyzer</h1>
         <button className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 transition">
@@ -12,7 +11,6 @@ function App() {
         </button>
       </nav>
 
-      {/* Hero Section */}
       <motion.section
         initial={{ opacity: 0, y: 40 }}
         animate={{ opacity: 1, y: 0 }}

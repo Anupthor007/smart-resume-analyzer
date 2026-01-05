@@ -1,26 +1,48 @@
 import { motion } from "framer-motion";
-import { Upload, FileText, Loader2 } from "lucide-react";
+import { Upload, FileText, Loader2, CheckCircle } from "lucide-react";
 import { useState } from "react";
 
 function ResumeUpload() {
   const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   function handleFileChange(event) {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
+      setResult(null);
+      setError(null);
     }
   }
 
-  function handleAnalyze() {
-    setLoading(true);
+  async function handleAnalyze() {
+    if (!file) return;
 
-    // Temporary fake delay (backend will replace this)
-    setTimeout(() => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("resume", file);
+
+      const response = await fetch("http://127.0.0.1:8000/analyze", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze resume");
+      }
+
+      const data = await response.json();
+      setResult(data);
+    } catch (err) {
+      setError("Something went wrong while analyzing the resume.");
+    } finally {
       setLoading(false);
-      alert("Resume analysis completed (backend coming next 🚀)");
-    }, 2000);
+    }
   }
 
   return (
@@ -33,11 +55,9 @@ function ResumeUpload() {
       {!file ? (
         <>
           <Upload className="mx-auto mb-4 text-blue-500" size={40} />
-
           <h3 className="text-xl font-semibold mb-2">
             Upload your resume
           </h3>
-
           <p className="text-gray-400 mb-4">
             Drag & drop your resume here, or click to browse
           </p>
@@ -65,7 +85,7 @@ function ResumeUpload() {
             {file.name}
           </h3>
 
-          <p className="text-gray-400 mb-6">
+          <p className="text-gray-400 mb-4">
             {(file.size / 1024).toFixed(2)} KB
           </p>
 
@@ -88,6 +108,32 @@ function ResumeUpload() {
               "Analyze Resume"
             )}
           </button>
+
+          {/* RESULT */}
+          {result && (
+            <div className="mt-6 text-left bg-gray-800 p-4 rounded-xl">
+              <div className="flex items-center gap-2 text-green-400 mb-2">
+                <CheckCircle size={18} />
+                <span className="font-semibold">Analysis Result</span>
+              </div>
+              <p className="text-sm text-gray-300">
+                <strong>Filename:</strong> {result.filename}
+              </p>
+              <p className="text-sm text-gray-300">
+                <strong>Type:</strong> {result.content_type}
+              </p>
+              <p className="text-sm text-gray-300 mt-2">
+                {result.message}
+              </p>
+            </div>
+          )}
+
+          {/* ERROR */}
+          {error && (
+            <p className="mt-4 text-red-400 text-sm">
+              {error}
+            </p>
+          )}
         </>
       )}
     </motion.div>
