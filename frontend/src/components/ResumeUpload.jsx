@@ -1,15 +1,26 @@
 import { motion } from "framer-motion";
-import { Upload, FileText } from "lucide-react";
+import { Upload, FileText, Loader2 } from "lucide-react";
 import { useState } from "react";
 
 function ResumeUpload() {
   const [file, setFile] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   function handleFileChange(event) {
     const selectedFile = event.target.files[0];
     if (selectedFile) {
       setFile(selectedFile);
     }
+  }
+
+  function handleAnalyze() {
+    setLoading(true);
+
+    // Temporary fake delay (backend will replace this)
+    setTimeout(() => {
+      setLoading(false);
+      alert("Resume analysis completed (backend coming next 🚀)");
+    }, 2000);
   }
 
   return (
@@ -50,7 +61,7 @@ function ResumeUpload() {
         <>
           <FileText className="mx-auto mb-4 text-green-500" size={40} />
 
-          <h3 className="text-lg font-semibold mb-2">
+          <h3 className="text-lg font-semibold mb-1">
             {file.name}
           </h3>
 
@@ -59,9 +70,23 @@ function ResumeUpload() {
           </p>
 
           <button
-            className="px-6 py-2 rounded-lg bg-green-600 hover:bg-green-500 transition"
+            onClick={handleAnalyze}
+            disabled={loading}
+            className={`px-6 py-2 rounded-lg flex items-center justify-center gap-2 mx-auto transition
+              ${
+                loading
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-500"
+              }`}
           >
-            Analyze Resume
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={18} />
+                Analyzing...
+              </>
+            ) : (
+              "Analyze Resume"
+            )}
           </button>
         </>
       )}
