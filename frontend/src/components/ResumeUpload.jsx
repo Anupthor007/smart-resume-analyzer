@@ -1,87 +1,83 @@
-import { motion } from "framer-motion";
-import {
-  Upload,
-  FileText,
-  Loader2,
-  CheckCircle,
-} from "lucide-react";
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 function ResumeUpload() {
   const [file, setFile] = useState(null);
+  const [jd, setJd] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const [error, setError] = useState(null);
-
-  function handleFileChange(e) {
-    setFile(e.target.files[0]);
-    setResult(null);
-    setError(null);
-  }
 
   async function handleAnalyze() {
     setLoading(true);
-    try {
-      const formData = new FormData();
-      formData.append("resume", file);
 
-      const res = await fetch("http://127.0.0.1:8000/analyze", {
-        method: "POST",
-        body: formData,
-      });
+    const formData = new FormData();
+    formData.append("resume", file);
+    formData.append("job_description", jd);
 
-      const data = await res.json();
-      setResult(data);
-    } catch {
-      setError("Failed to analyze resume");
-    } finally {
-      setLoading(false);
-    }
+    const res = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setResult(data);
+    setLoading(false);
   }
 
   return (
-    <motion.div className="border-2 border-dashed border-gray-700 rounded-2xl p-10 bg-gray-900">
-      {!file ? (
-        <>
-          <Upload className="mx-auto mb-4 text-blue-500" size={40} />
-          <input type="file" accept=".pdf" onChange={handleFileChange} />
-        </>
-      ) : (
-        <>
-          <FileText className="mx-auto mb-2 text-green-500" size={36} />
-          <p className="text-sm text-gray-300 mb-4">{file.name}</p>
+    <div className="bg-gray-900 p-8 rounded-2xl space-y-6">
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
 
-          <button
-            onClick={handleAnalyze}
-            disabled={loading}
-            className="px-6 py-2 bg-green-600 rounded-lg"
-          >
-            {loading ? "Analyzing..." : "Analyze Resume"}
-          </button>
+      <textarea
+        placeholder="Paste Job Description here..."
+        className="w-full p-3 rounded-lg bg-gray-800 text-white"
+        rows={5}
+        value={jd}
+        onChange={(e) => setJd(e.target.value)}
+      />
 
-          {result && (
-            <div className="mt-6">
-              <div className="flex items-center gap-2 text-green-400 mb-2">
-                <CheckCircle size={18} /> Extracted Skills
-              </div>
+      <button
+        onClick={handleAnalyze}
+        disabled={loading}
+        className="px-6 py-2 bg-green-600 rounded-lg"
+      >
+        {loading ? <Loader2 className="animate-spin" /> : "Analyze Match"}
+      </button>
 
-              <div className="flex flex-wrap gap-2">
-                {result.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 bg-blue-600/20 text-blue-300 rounded-full text-sm"
-                  >
-                    {skill}
-                  </span>
-                ))}
-              </div>
+      {result && (
+        <div className="space-y-4">
+          <h3 className="text-xl font-bold">
+            Match Score: {result.match_score}%
+          </h3>
+
+          <div>
+            <h4 className="font-semibold text-green-400">Matched Skills</h4>
+            <div className="flex flex-wrap gap-2">
+              {result.matched_skills.map((s) => (
+                <span key={s} className="px-3 py-1 bg-green-600/20 rounded-full">
+                  {s}
+                </span>
+              ))}
             </div>
-          )}
+          </div>
 
-          {error && <p className="text-red-400 mt-4">{error}</p>}
-        </>
+          <div>
+            <h4 className="font-semibold text-red-400">Missing Skills</h4>
+            <div className="flex flex-wrap gap-2">
+              {result.missing_skills.map((s) => (
+                <span key={s} className="px-3 py-1 bg-red-600/20 rounded-full">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 }
 
